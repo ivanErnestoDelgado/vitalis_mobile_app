@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
+import '../globalWIdgets/role_options_panel.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -12,14 +13,25 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int currentIndex = 0;
 
-  late List<Widget> pages;
+  late List<String> activeRoles;
   late List<BottomNavigationBarItem> navItems;
+
+  final Map<String, List<String>> roleMenus = {
+    "patient": ["Medicaciones", "Compartir acceso", "Recordatorios"],
+    "doctor": [
+      "Accesos compartidos",
+      "Consulta de medicamentos",
+      "Recordatorios",
+      "Pacientes",
+    ],
+    "family": ["Recordatorios", "Familiares Registrados"],
+  };
 
   @override
   void initState() {
     super.initState();
-    pages = [];
     navItems = [];
+    activeRoles = [];
   }
 
   @override
@@ -36,39 +48,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return const SizedBox.shrink();
     }
 
-    // Limpiamos listas (por si rebuild)
-    pages = [];
     navItems = [];
+    activeRoles = [];
 
-    if (user.roles.contains("patient")) {
-      navItems.add(
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: "Paciente",
-        ),
-      );
-      pages.add(const Center(child: Text("Pantalla Paciente")));
+    for (final role in user.roles) {
+      if (roleMenus.containsKey(role)) {
+        String label = adaptRoleNameToLabel(role);
+        activeRoles.add(role);
+
+        navItems.add(
+          BottomNavigationBarItem(
+            icon: Icon(_getRoleIcon(role)),
+            label: _capitalize(label),
+          ),
+        );
+      }
     }
 
-    if (user.roles.contains("doctor")) {
-      navItems.add(
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.medical_services),
-          label: "Doctor",
-        ),
-      );
-      pages.add(const Center(child: Text("Pantalla Doctor")));
-    }
-
-    if (user.roles.contains("family")) {
-      navItems.add(
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.family_restroom),
-          label: "Familiar",
-        ),
-      );
-      pages.add(const Center(child: Text("Pantalla Familiar")));
-    }
+    final currentRole = activeRoles[currentIndex];
+    final options = roleMenus[currentRole]!;
 
     return Scaffold(
       appBar: AppBar(
@@ -82,12 +80,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ],
       ),
-      body: pages[currentIndex],
+
+      /// El menú dinámico:
+      body: RoleOptionsPanel(
+        options: options,
+        onSelected: (option) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("Clicked: $option")));
+        },
+      ),
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         items: navItems,
         onTap: (i) => setState(() => currentIndex = i),
       ),
     );
+  }
+
+  IconData _getRoleIcon(String role) {
+    switch (role) {
+      case "patient":
+        return Icons.person;
+      case "doctor":
+        return Icons.medical_services;
+      case "family":
+        return Icons.family_restroom;
+      default:
+        return Icons.circle;
+    }
+  }
+
+  String _capitalize(String role) =>
+      "${role[0].toUpperCase()}${role.substring(1)}";
+
+  String adaptRoleNameToLabel(String role) {
+    switch (role) {
+      case "patient":
+        return "Paciente";
+      case "doctor":
+        return "Doctor";
+      case "family":
+        return "Familiares";
+      default:
+        return "Nada";
+    }
   }
 }
