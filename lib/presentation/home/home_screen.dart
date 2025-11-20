@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
 import '../globalWIdgets/role_options_panel.dart';
 
@@ -85,9 +86,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: RoleOptionsPanel(
         options: options,
         onSelected: (option) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text("Clicked: $option")));
+          // Mapea opciones a rutas
+          switch (option) {
+            case "Medicaciones":
+              context.go('/medications');
+              break;
+            case "Consulta de medicamentos":
+              context.go('/medications/catalog');
+              break;
+            default:
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text("Clicked: $option")));
+          }
         },
       ),
 
