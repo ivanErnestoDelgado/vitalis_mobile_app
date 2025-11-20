@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../presentation/login/login_screen.dart';
 import '../presentation/home/home_screen.dart';
+import '../presentation/medications/patient_medications_screen.dart';
+import '../presentation/medications/create_medication_screen.dart';
+import '../presentation/medications/view_drug_catalog_screen.dart';
 import 'stream_listenable.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -31,6 +34,18 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/login', builder: (_, __) => LoginScreen()),
       GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+      GoRoute(
+        path: '/medications',
+        builder: (_, __) => const PatientMedicationsScreen(),
+      ),
+      GoRoute(
+        path: '/medications/create',
+        builder: (_, __) => const CreateMedicationScreen(),
+      ),
+      GoRoute(
+        path: '/medications/catalog',
+        builder: (_, __) => const ViewDrugCatalogScreen(),
+      ),
     ],
   );
 });
