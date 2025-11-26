@@ -41,4 +41,32 @@ class AuthRemoteDataSource {
       }
     }
   }
+
+  Future<void> register({
+    required String email,
+    required String firstName,
+    required String lastName,
+    required String phoneNumber,
+    required String password,
+  }) async {
+    try {
+      await _dio.post(
+        "api/users/register/",
+        data: {
+          "email": email,
+          "first_name": firstName,
+          "last_name": lastName,
+          "phone_number": phoneNumber,
+          "password": password,
+          "role": "patient", // IMPORTANTE: siempre patient como pediste
+        },
+      );
+    } on DioException catch (e) {
+      if (e.response != null) {
+        throw Exception("Error: ${e.response?.data}");
+      } else {
+        throw Exception("No hay conexión con el servidor");
+      }
+    }
+  }
 }
