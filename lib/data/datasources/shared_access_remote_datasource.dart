@@ -25,10 +25,8 @@ class SharedAccessRemoteDataSource {
   Future<List<SharedAccess>> getMySharedAccesses() async {
     try {
       final res = await dio.get('/shared/shared-access/');
-      final data = res.data as List<dynamic>;
-      return data
-          .map((e) => SharedAccess.fromJson(e as Map<String, dynamic>))
-          .toList();
+      final List data = res.data as List;
+      return data.map((e) => SharedAccess.fromJson(e)).toList();
     } on DioException catch (e) {
       throw Exception(e.response?.data ?? e.message);
     }

@@ -1,9 +1,11 @@
+import 'user_profile.dart';
+
 class SharedAccess {
   final int id;
-  final int owner;
-  final int sharedWith;
-  final String role; // family | doctor
-  final String status; // pending | accepted | rejected
+  final UserProfile owner;
+  final UserProfile sharedWith;
+  final String role;
+  final String status;
   final DateTime createdAt;
 
   SharedAccess({
@@ -18,8 +20,8 @@ class SharedAccess {
   factory SharedAccess.fromJson(Map<String, dynamic> json) {
     return SharedAccess(
       id: json["id"],
-      owner: json["owner"],
-      sharedWith: json["shared_with"],
+      owner: UserProfile.fromJson(json["owner"]),
+      sharedWith: UserProfile.fromJson(json["shared_with"]),
       role: json["role"],
       status: json["status"],
       createdAt: DateTime.parse(json["created_at"]),
