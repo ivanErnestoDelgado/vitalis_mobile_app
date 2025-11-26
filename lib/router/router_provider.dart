@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vitalis_mobile_app/presentation/auth/register_screen.dart';
 
+import '../data/models/shared_access.dart';
+
 import '../providers/auth_provider.dart';
 import '../presentation/auth/login_screen.dart';
 import '../presentation/home/home_screen.dart';
@@ -14,6 +16,7 @@ import 'package:vitalis_mobile_app/presentation/shared/invite_by_email_screen.da
 import 'package:vitalis_mobile_app/presentation/shared/generate_qr_screen.dart';
 import 'package:vitalis_mobile_app/presentation/shared/scan_qr_screen.dart';
 import 'package:vitalis_mobile_app/presentation/shared/shared_list_screen.dart';
+import 'package:vitalis_mobile_app/presentation/shared/shared_detail_screen.dart';
 
 import 'stream_listenable.dart';
 
@@ -87,6 +90,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/shared/list',
         builder: (_, __) => const SharedAccessListScreen(),
+      ),
+      GoRoute(
+        path: '/shared/detail',
+        builder: (_, state) {
+          final shared = state.extra as SharedAccess;
+          return SharedAccessDetailScreen(shared: shared);
+        },
       ),
     ],
   );
