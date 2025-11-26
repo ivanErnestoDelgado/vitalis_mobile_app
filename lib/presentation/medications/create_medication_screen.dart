@@ -21,24 +21,173 @@ class _CreateMedicationScreenState
   final dosageCtrl = TextEditingController(
     text: "Tomar 1 tableta cada 8 horas",
   );
+
   DateTime? startDate;
   DateTime? endDate;
 
-  bool loadingDrugs = true;
-
   @override
-  void initState() {
-    super.initState();
-    _loadCatalog();
-  }
+  Widget build(BuildContext context) {
+    final drugsAsync = ref.watch(drugCatalogProvider);
+    final auth = ref.watch(authStateProvider).value;
 
-  Future<void> _loadCatalog() async {
-    setState(() => loadingDrugs = true);
-    try {
-      await ref.refresh(drugCatalogProvider.future);
-    } finally {
-      if (mounted) setState(() => loadingDrugs = false);
-    }
+    return Scaffold(
+      backgroundColor: const Color(0xFFF3F9FA),
+      appBar: AppBar(
+        title: const Text("Nueva Medicación"),
+        backgroundColor: const Color(0xFF0A8EA0),
+      ),
+      body: drugsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, st) => Center(child: Text("Error: $err")),
+        data: (drugs) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                _vitalisCard(
+                  child: DropdownButtonFormField<Drug>(
+                    value: selectedDrug,
+                    decoration: const InputDecoration(labelText: "Medicamento"),
+                    items: drugs
+                        .map(
+                          (d) =>
+                              DropdownMenuItem(value: d, child: Text(d.name)),
+                        )
+                        .toList(),
+                    onChanged: (d) {
+                      setState(() {
+                        selectedDrug = d;
+                        selectedVariant = null;
+                      });
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                if (selectedDrug != null)
+                  _vitalisCard(
+                    child: DropdownButtonFormField<DrugVariant>(
+                      value: selectedVariant,
+                      decoration: const InputDecoration(labelText: "Variante"),
+                      items: selectedDrug!.variants
+                          .map(
+                            (v) => DropdownMenuItem(
+                              value: v,
+                              child: Text("${v.variantName} — ${v.dosage}"),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (v) => setState(() => selectedVariant = v),
+                    ),
+                  ),
+
+                const SizedBox(height: 16),
+
+                _vitalisCard(
+                  child: TextFormField(
+                    controller: dosageCtrl,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      labelText: "Instrucciones",
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: _vitalisCard(
+                        child: TextButton(
+                          onPressed: _pickStart,
+                          child: Text(
+                            startDate == null
+                                ? "Fecha inicio"
+                                : DateFormat.yMd().format(startDate!),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _vitalisCard(
+                        child: TextButton(
+                          onPressed: _pickEnd,
+                          child: Text(
+                            endDate == null
+                                ? "Fecha fin"
+                                : DateFormat.yMd().format(endDate!),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 28),
+
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0A8EA0),
+                    minimumSize: const Size(double.infinity, 52),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: () async {
+                    if (selectedVariant == null ||
+                        auth == null ||
+                        startDate == null ||
+                        endDate == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Completa todos los campos"),
+                        ),
+                      );
+                      return;
+                    }
+
+                    if (endDate!.isBefore(startDate!)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "La fecha final no puede ser anterior a la inicial",
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    String f(DateTime d) =>
+                        "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
+
+                    await ref
+                        .read(medicationControllerProvider.notifier)
+                        .createMedication(
+                          patient: auth.id,
+                          drugVariant: selectedVariant!.id,
+                          dosageInstructions: dosageCtrl.text.trim(),
+                          startDate: f(startDate!),
+                          endDate: f(endDate!),
+                        );
+
+                    if (mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Medicación creada")),
+                      );
+                    }
+                  },
+                  child: const Text("Guardar", style: TextStyle(fontSize: 18)),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Future<void> _pickStart() async {
@@ -63,134 +212,17 @@ class _CreateMedicationScreenState
     if (dt != null) setState(() => endDate = dt);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final drugsAsync = ref.watch(drugCatalogProvider);
-    final auth = ref.watch(authStateProvider).value;
-
-    return drugsAsync.when(
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (err, st) => Scaffold(body: Center(child: Text("Error: $err"))),
-      data: (drugs) {
-        return Scaffold(
-          appBar: AppBar(title: const Text("Crear medicación")),
-          body: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                DropdownButtonFormField<Drug>(
-                  initialValue: selectedDrug,
-                  items: drugs
-                      .map(
-                        (d) => DropdownMenuItem(value: d, child: Text(d.name)),
-                      )
-                      .toList(),
-                  onChanged: (d) {
-                    setState(() {
-                      selectedDrug = d;
-                      selectedVariant = null;
-                    });
-                  },
-                  decoration: const InputDecoration(labelText: "Medicamento"),
-                ),
-
-                const SizedBox(height: 12),
-
-                if (selectedDrug != null)
-                  DropdownButtonFormField<DrugVariant>(
-                    value: selectedVariant,
-                    items: selectedDrug!.variants
-                        .map(
-                          (v) => DropdownMenuItem(
-                            value: v,
-                            child: Text("${v.variantName} — ${v.dosage}"),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (v) => setState(() => selectedVariant = v),
-                    decoration: const InputDecoration(labelText: "Variante"),
-                  ),
-
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: dosageCtrl,
-                  maxLines: 2,
-                  decoration: const InputDecoration(labelText: "Instrucciones"),
-                ),
-
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _pickStart,
-                        child: Text(
-                          startDate == null
-                              ? "Fecha inicio"
-                              : DateFormat.yMd().format(startDate!),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _pickEnd,
-                        child: Text(
-                          endDate == null
-                              ? "Fecha fin"
-                              : DateFormat.yMd().format(endDate!),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-
-                ElevatedButton(
-                  onPressed: () async {
-                    if (selectedVariant == null ||
-                        auth == null ||
-                        startDate == null ||
-                        endDate == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Completa todos los campos"),
-                        ),
-                      );
-                      return;
-                    }
-
-                    // formato yyyy-MM-dd
-                    final sdf = (DateTime d) =>
-                        "${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
-
-                    await ref
-                        .read(medicationControllerProvider.notifier)
-                        .createMedication(
-                          patient: auth.id,
-                          drugVariant: selectedVariant!.id,
-                          dosageInstructions: dosageCtrl.text.trim(),
-                          startDate: sdf(startDate!),
-                          endDate: sdf(endDate!),
-                        );
-
-                    // go back and refresh list
-                    if (mounted) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Medicación creada")),
-                      );
-                    }
-                  },
-                  child: const Text("Crear"),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+  Widget _vitalisCard({required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(blurRadius: 8, offset: Offset(0, 3), color: Colors.black12),
+        ],
+      ),
+      child: child,
     );
   }
 }
