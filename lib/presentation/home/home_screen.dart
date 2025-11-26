@@ -11,14 +11,24 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with SingleTickerProviderStateMixin {
   int currentIndex = 0;
 
   late List<String> activeRoles;
   late List<BottomNavigationBarItem> navItems;
 
+  AnimationController? _animController;
+  Animation<double>? _fadeAnim;
+  Animation<Offset>? _slideAnim;
+
   final Map<String, List<String>> roleMenus = {
-    "patient": ["Medicaciones", "Compartir acceso", "Recordatorios"],
+    "patient": [
+      "Consulta de medicamentos",
+      "Medicaciones",
+      "Compartir acceso",
+      "Recordatorios",
+    ],
     "doctor": [
       "Accesos compartidos",
       "Consulta de medicamentos",
@@ -33,10 +43,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     navItems = [];
     activeRoles = [];
+
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+
+    _fadeAnim = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _animController!, curve: Curves.easeOut));
+
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, .05),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animController!, curve: Curves.easeOut));
+
+    _animController!.forward();
+  }
+
+  @override
+  void dispose() {
+    _animController?.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final authState = ref.watch(authStateProvider);
     final user = authState.value;
 
@@ -54,13 +88,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     for (final role in user.roles) {
       if (roleMenus.containsKey(role)) {
-        String label = adaptRoleNameToLabel(role);
         activeRoles.add(role);
 
         navItems.add(
           BottomNavigationBarItem(
             icon: Icon(_getRoleIcon(role)),
-            label: _capitalize(label),
+            label: _capitalize(adaptRoleNameToLabel(role)),
           ),
         );
       }
@@ -70,44 +103,80 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final options = roleMenus[currentRole]!;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF7FAFC),
       appBar: AppBar(
-        title: Text("Bienvenido, ${user.firstName}"),
+        elevation: 2,
+        backgroundColor: const Color(0xFF0C6CF2),
+        title: Text(
+          "Bienvenido a Vitalis ${user.firstName}",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color.fromARGB(255, 195, 205, 212),
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () {
-              ref.read(authStateProvider.notifier).logout();
-            },
+            onPressed: () => ref.read(authStateProvider.notifier).logout(),
+            color: Color.fromARGB(255, 195, 205, 212),
           ),
         ],
       ),
 
-      /// El menú dinámico:
-      body: RoleOptionsPanel(
-        options: options,
-        onSelected: (option) {
-          // Mapea opciones a rutas
-          switch (option) {
-            case "Medicaciones":
-              context.go('/medications');
-              break;
-            case "Consulta de medicamentos":
-              context.go('/medications/catalog');
-              break;
-            default:
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text("Clicked: $option")));
-          }
-        },
+      body: FadeTransition(
+        opacity: _fadeAnim!,
+        child: SlideTransition(
+          position: _slideAnim!,
+          child: RoleOptionsPanel(options: options, onSelected: _handleOption),
+        ),
       ),
 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
-        items: navItems,
+        selectedItemColor: const Color(0xFF0C6CF2),
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.white,
         onTap: (i) => setState(() => currentIndex = i),
+        items: navItems,
       ),
     );
+  }
+
+  void _handleOption(String option) {
+    switch (option) {
+      /// Paciente
+      case "Medicaciones":
+        context.go('/medications');
+        break;
+
+      case "Consulta de medicamentos":
+        context.go('/medications/catalog');
+        break;
+
+      case "Compartir acceso":
+        context.push('/shared?role=patient');
+        break;
+
+      /// Doctor
+      case "Accesos compartidos":
+        context.push('/shared?role=doctor');
+        break;
+
+      /// Family – en caso de que agregues algo después
+      case "Familiares Registrados":
+        // Aquí después puedes meter otra ruta.
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Pantalla no implementada")),
+        );
+        break;
+
+      /// Default
+      default:
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Clicked: $option")));
+    }
   }
 
   IconData _getRoleIcon(String role) {
@@ -123,8 +192,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  String _capitalize(String role) =>
-      "${role[0].toUpperCase()}${role.substring(1)}";
+  String _capitalize(String s) => "${s[0].toUpperCase()}${s.substring(1)}";
 
   String adaptRoleNameToLabel(String role) {
     switch (role) {
@@ -135,7 +203,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       case "family":
         return "Familiares";
       default:
-        return "Nada";
+        return "Otro";
     }
   }
 }
