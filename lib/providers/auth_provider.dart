@@ -1,4 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vitalis_mobile_app/providers/dio_provider.dart';
+import 'package:vitalis_mobile_app/providers/medication_provider.dart';
+import 'package:vitalis_mobile_app/providers/shared_access_provider.dart';
 import '../data/models/auth_response.dart';
 import '../data/repositories/auth_repository.dart';
 import '../data/datasources/auth_remote_datasource.dart';
@@ -33,5 +36,15 @@ class AuthController extends StateNotifier<AsyncValue<AuthResponse?>> {
 
   void logout() {
     state = const AsyncValue.data(null);
+
+    ref.invalidate(sharedAccessNotifierProvider);
+    ref.invalidate(sharedAccessRepositoryProvider);
+
+    ref.invalidate(medicationRepositoryProvider);
+    ref.invalidate(medicationControllerProvider);
+
+    ref.invalidate(drugCatalogProvider);
+
+    ref.invalidate(dioProvider);
   }
 }

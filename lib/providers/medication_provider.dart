@@ -6,24 +6,24 @@ import '../data/models/drug.dart';
 import 'auth_provider.dart';
 import 'dart:async';
 
-final medicationRepositoryProvider = Provider<MedicationRepository>((ref) {
-  return MedicationRepository(
-    MedicationRemoteDataSource(
-      token: ref.read(authStateProvider).value!.accessToken,
-    ),
-  );
-});
+final medicationRepositoryProvider = Provider.autoDispose<MedicationRepository>(
+  (ref) {
+    final auth = ref.watch(authStateProvider).value;
+    final token = auth?.accessToken ?? '';
+
+    return MedicationRepository(MedicationRemoteDataSource(token: token));
+  },
+);
 
 /// Controller that holds the list and allows refresh/create/delete
 class MedicationController extends StateNotifier<AsyncValue<List<Medication>>> {
   final Ref ref;
-  final MedicationRepository repo;
 
-  MedicationController(this.ref, this.repo)
-    : super(const AsyncValue.loading()) {
-    // fetch on create
+  MedicationController(this.ref) : super(const AsyncValue.loading()) {
     _fetch();
   }
+
+  MedicationRepository get repo => ref.watch(medicationRepositoryProvider);
 
   Future<void> _fetch() async {
     try {
@@ -32,6 +32,7 @@ class MedicationController extends StateNotifier<AsyncValue<List<Medication>>> {
         state = const AsyncValue.data([]);
         return;
       }
+
       final patientId = auth.id;
       final list = await repo.getPatientMedications(patientId);
       state = AsyncValue.data(list);
@@ -78,13 +79,13 @@ class MedicationController extends StateNotifier<AsyncValue<List<Medication>>> {
 }
 
 final medicationControllerProvider =
-    StateNotifierProvider<MedicationController, AsyncValue<List<Medication>>>(
-      (ref) =>
-          MedicationController(ref, ref.read(medicationRepositoryProvider)),
-    );
+    StateNotifierProvider.autoDispose<
+      MedicationController,
+      AsyncValue<List<Medication>>
+    >((ref) => MedicationController(ref));
 
 /// Provider para catálogo de medicamentos (lectura)
-final drugCatalogProvider = FutureProvider<List<Drug>>((ref) async {
-  final repo = ref.read(medicationRepositoryProvider);
+final drugCatalogProvider = FutureProvider.autoDispose<List<Drug>>((ref) async {
+  final repo = ref.watch(medicationRepositoryProvider);
   return repo.getDrugsCatalog();
 });

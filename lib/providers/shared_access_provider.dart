@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vitalis_mobile_app/providers/auth_provider.dart';
 import '../data/datasources/shared_access_remote_datasource.dart';
 import '../data/repositories/shared_access_repository.dart';
 import '../data/models/shared_access.dart';
@@ -30,6 +31,12 @@ class SharedAccessNotifier
   }
 
   Future<void> load() async {
+    final auth = ref.read(authStateProvider).value;
+    if (auth == null) {
+      state = const AsyncValue.data([]);
+      return;
+    }
+
     state = const AsyncValue.loading();
     try {
       final data = await repo.getAll();
