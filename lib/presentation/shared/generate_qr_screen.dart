@@ -98,7 +98,7 @@ class _GenerateQrScreenState extends ConsumerState<GenerateQrScreen> {
             ],
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0C6CF2),
+                backgroundColor: Colors.white,
                 elevation: 4,
                 shadowColor: const Color(0xFF0C6CF2).withOpacity(0.4),
                 minimumSize: const Size(double.infinity, 50),
@@ -113,6 +113,28 @@ class _GenerateQrScreenState extends ConsumerState<GenerateQrScreen> {
                       token == null ? 'Generar QR' : 'Regenerar QR',
                       style: const TextStyle(fontSize: 18),
                     ),
+            ),
+            // Este botón va debajo del ElevatedButton de "Generar QR"
+            const SizedBox(height: 20),
+
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF0C6CF2),
+                elevation: 2,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              icon: const Icon(Icons.qr_code_scanner),
+              label: const Text(
+                "Escanear un QR",
+                style: TextStyle(fontSize: 18),
+              ),
+              onPressed: () {
+                context.push('/shared/scan?role=${widget.role}');
+              },
             ),
           ],
         ),
