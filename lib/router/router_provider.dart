@@ -69,8 +69,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/shared/invite',
         builder: (_, state) {
-          final role = state.uri.queryParameters['role'] ?? 'patient';
-          return InviteByEmailScreen(role: role);
+          return InviteByEmailScreen();
         },
       ),
       GoRoute(
@@ -89,7 +88,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/shared/list',
-        builder: (_, __) => const SharedAccessListScreen(),
+        builder: (_, state) {
+          final role = state.uri.queryParameters['role'] ?? 'patient';
+          return SharedAccessListScreen(role: role);
+        },
       ),
       GoRoute(
         path: '/shared/detail',
