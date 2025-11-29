@@ -11,7 +11,7 @@ class MedicationRemoteDataSource {
           dio ??
           Dio(
             BaseOptions(
-              baseUrl: "http://127.0.0.1:8000/",
+              baseUrl: "http://192.168.100.61:8000/",
               headers: {
                 "Content-Type": "application/json",
                 'Authorization': 'Bearer $token',
