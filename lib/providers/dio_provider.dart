@@ -5,7 +5,7 @@ import '../providers/auth_provider.dart';
 final dioProvider = Provider<Dio>((ref) {
   final dio = Dio(
     BaseOptions(
-      baseUrl: "http://127.0.0.1:8000/api",
+      baseUrl: "http://192.168.100.61:8000/api",
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
       contentType: 'application/json',
