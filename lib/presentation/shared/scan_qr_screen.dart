@@ -29,13 +29,13 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
       await ref
           .read(sharedAccessNotifierProvider.notifier)
           .connectViaQR(code, widget.role);
-
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Acceso compartido creado con éxito')),
       );
 
-      context.go('/shared/list');
+      if (widget.role == 'doctor') context.go('/shared?role=doctor');
+      if (widget.role == 'patient') context.go('/shared?role=patient');
     } catch (e) {
       processing = false;
 
