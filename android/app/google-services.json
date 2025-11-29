@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "186870894086",
+    "project_id": "vitalis-3c404",
+    "storage_bucket": "vitalis-3c404.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:186870894086:android:e7be12b1f69f7f2f853d87",
+        "android_client_info": {
+          "package_name": "com.example.vitalis_mobile_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGvcfwzn-45JyijJeAOVMKQBohma6jJLk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
