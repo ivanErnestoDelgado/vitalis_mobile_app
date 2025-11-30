@@ -1,6 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vitalis_mobile_app/presentation/auth/register_screen.dart';
+import 'package:vitalis_mobile_app/presentation/reminders/create_reminder_screen.dart';
+import 'package:vitalis_mobile_app/presentation/reminders/reminder_detail_screen.dart';
+import 'package:vitalis_mobile_app/presentation/reminders/reminder_edit_screen.dart';
+import 'package:vitalis_mobile_app/presentation/reminders/reminder_list_screen.dart';
 
 import '../data/models/shared_access.dart';
 
@@ -98,6 +102,33 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, state) {
           final shared = state.extra as SharedAccess;
           return SharedAccessDetailScreen(shared: shared);
+        },
+      ),
+      GoRoute(
+        path: '/reminders',
+        name: 'reminders',
+        builder: (context, state) => const RemindersListScreen(),
+      ),
+
+      GoRoute(
+        path: '/reminders/create',
+        name: 'reminder_create',
+        builder: (context, state) => const ReminderCreateScreen(),
+      ),
+      GoRoute(
+        path: '/reminders/:id',
+        name: 'reminder_detail',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return ReminderDetailScreen(reminderId: id);
+        },
+      ),
+      GoRoute(
+        path: '/reminders/:id/edit',
+        name: 'reminder_edit',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return ReminderEditScreen(reminderId: id);
         },
       ),
     ],
