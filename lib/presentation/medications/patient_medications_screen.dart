@@ -22,6 +22,7 @@ class PatientMedicationsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final medsState = ref.watch(medicationControllerProvider);
+    final drugCatalog = ref.watch(drugCatalogProvider);
 
     return medsState.when(
       loading: () =>
@@ -29,13 +30,11 @@ class PatientMedicationsScreen extends ConsumerWidget {
       error: (err, st) => Scaffold(
         appBar: AppBar(
           title: const Text("Medicaciones"),
-          backgroundColor: const Color(0xFF0A8EA0),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.home),
-              onPressed: () => context.go('/home'), // ← AQUÍ
-            ),
-          ],
+          backgroundColor: const Color(0xFF1E88E5),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new),
+            onPressed: () => context.pop(),
+          ),
         ),
         body: Center(child: Text("Error: $err")),
       ),
@@ -44,13 +43,13 @@ class PatientMedicationsScreen extends ConsumerWidget {
           backgroundColor: const Color(0xFFF3F9FA),
           appBar: AppBar(
             title: const Text("Medicaciones"),
-            backgroundColor: const Color(0xFF0A8EA0),
-            elevation: 2,
+            backgroundColor: const Color(0xFF1E88E5),
+            elevation: 1,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new),
+              onPressed: () => context.pop(),
+            ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.home),
-                onPressed: () => context.go('/home'), // ← NUEVO BOTÓN
-              ),
               IconButton(
                 icon: const Icon(Icons.refresh),
                 onPressed: () =>
@@ -58,114 +57,197 @@ class PatientMedicationsScreen extends ConsumerWidget {
               ),
               IconButton(
                 icon: const Icon(Icons.add),
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const CreateMedicationScreen(),
-                  ),
-                ),
+                onPressed: () => context.push('/medications/create'),
               ),
             ],
           ),
-          body: list.isEmpty
-              ? const Center(
+          body: drugCatalog.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, st) => Center(child: Text("Error cargando catálogo")),
+            data: (drugs) {
+              if (list.isEmpty) {
+                return const Center(
                   child: Text(
                     "No hay medicaciones registradas",
                     style: TextStyle(fontSize: 16, color: Colors.black54),
                   ),
-                )
-              : ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: list.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (_, i) {
-                    final m = list[i];
+                );
+              }
 
-                    return TweenAnimationBuilder(
-                      duration: const Duration(milliseconds: 350),
-                      tween: Tween<double>(begin: 0, end: 1),
-                      builder: (context, value, child) => Opacity(
-                        opacity: value,
-                        child: Transform.translate(
-                          offset: Offset(0, 20 * (1 - value)),
-                          child: child,
-                        ),
+              String drugInfo(Medication m) {
+                final variant = drugs
+                    .expand((d) => d.variants)
+                    .firstWhere((v) => v.id == m.drugVariant);
+
+                final drug = drugs.firstWhere((d) => d.id == variant.drug);
+
+                return "${drug.name} — ${variant.variantName} (${variant.dosage})";
+              }
+
+              return ListView.separated(
+                padding: const EdgeInsets.all(16),
+                itemCount: list.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 14),
+                itemBuilder: (_, i) {
+                  final m = list[i];
+
+                  return TweenAnimationBuilder(
+                    duration: const Duration(milliseconds: 300),
+                    tween: Tween<double>(begin: 0, end: 1),
+                    builder: (context, v, child) => Opacity(
+                      opacity: v,
+                      child: Transform.translate(
+                        offset: Offset(0, 20 * (1 - v)),
+                        child: child,
                       ),
-                      child: Card(
-                        elevation: 3,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(16),
-                          title: Text(
-                            m.dosageInstructions,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
+                    ),
+                    child: _MedicationCard(
+                      medication: m,
+                      drugText: drugInfo(m),
+                      canDelete: _canDelete(m),
+                      onDelete: () async {
+                        final ok = await showDialog<bool>(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: const Text("Eliminar medicación"),
+                            content: const Text(
+                              "¿Estás seguro de eliminar esta medicación?",
                             ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text("Cancelar"),
+                              ),
+                              ElevatedButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text("Eliminar"),
+                              ),
+                            ],
                           ),
-                          subtitle: Text(
-                            "Inicio: ${m.startDate} — Fin: ${m.endDate}\n"
-                            "Creado: ${DateFormat.yMd().add_Hm().format(DateTime.parse(m.createdAt))}",
-                          ),
-                          trailing: _canDelete(m)
-                              ? IconButton(
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
-                                  ),
-                                  onPressed: () async {
-                                    final ok = await showDialog<bool>(
-                                      context: context,
-                                      builder: (_) => AlertDialog(
-                                        title: const Text(
-                                          "Eliminar medicación",
-                                        ),
-                                        content: const Text(
-                                          "¿Estás seguro de eliminar esta medicación?",
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, false),
-                                            child: const Text("Cancelar"),
-                                          ),
-                                          ElevatedButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, true),
-                                            child: const Text("Eliminar"),
-                                          ),
-                                        ],
-                                      ),
-                                    );
+                        );
 
-                                    if (ok == true) {
-                                      await ref
-                                          .read(
-                                            medicationControllerProvider
-                                                .notifier,
-                                          )
-                                          .deleteMedication(m.id);
+                        if (ok == true) {
+                          await ref
+                              .read(medicationControllerProvider.notifier)
+                              .deleteMedication(m.id);
 
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text("Medicación eliminada"),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                )
-                              : const SizedBox.shrink(),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Medicación eliminada"),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  );
+                },
+              );
+            },
+          ),
         );
       },
+    );
+  }
+}
+
+class _MedicationCard extends StatelessWidget {
+  final Medication medication;
+  final String drugText;
+  final bool canDelete;
+  final VoidCallback onDelete;
+
+  const _MedicationCard({
+    required this.medication,
+    required this.drugText,
+    required this.canDelete,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final start = DateFormat.yMMMd().format(
+      DateTime.parse(medication.startDate),
+    );
+    final end = DateFormat.yMMMd().format(DateTime.parse(medication.endDate));
+    final created = DateFormat.yMMMd().add_Hm().format(
+      DateTime.parse(medication.createdAt),
+    );
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFF1E88E5).withOpacity(0.2),
+          width: 1.2,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              drugText,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1E88E5),
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            Text(
+              medication.dosageInstructions,
+              style: const TextStyle(fontSize: 15, color: Colors.black87),
+            ),
+
+            const SizedBox(height: 14),
+
+            Row(
+              children: [
+                const Icon(
+                  Icons.calendar_today,
+                  size: 16,
+                  color: Color(0xFF1E88E5),
+                ),
+                const SizedBox(width: 6),
+                Text("Inicio: $start"),
+                const SizedBox(width: 14),
+                Text("Fin: $end"),
+              ],
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              "Creado el: $created",
+              style: const TextStyle(fontSize: 13, color: Colors.black54),
+            ),
+
+            const SizedBox(height: 14),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (canDelete)
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: onDelete,
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
