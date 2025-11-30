@@ -147,11 +147,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     switch (option) {
       /// Paciente
       case "Medicaciones":
-        context.go('/medications');
+        context.push('/medications');
         break;
 
       case "Consulta de medicamentos":
-        context.go('/medications/catalog');
+        context.push('/medications/catalog');
         break;
 
       case "Compartir acceso":
@@ -161,6 +161,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       /// Doctor
       case "Accesos compartidos":
         context.push('/shared?role=doctor');
+        break;
+
+      case "Recordatorios":
+        context.push('/reminders');
         break;
 
       /// Family – en caso de que agregues algo después
