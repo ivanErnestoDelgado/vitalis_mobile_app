@@ -14,7 +14,7 @@ class RemindersListScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F7FB),
 
-      // 🔵 APPBAR PERSONALIZADA CON BOTÓN DE REGRESO
+      //APPBAR PERSONALIZADA CON BOTÓN DE REGRESO
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(65),
         child: Container(
@@ -57,7 +57,12 @@ class RemindersListScreen extends ConsumerWidget {
                   ),
                 ),
 
-                const SizedBox(width: 48), // Para equilibrio visual
+                //SizedBox(width: 48), // Para equilibrio visual
+                IconButton(
+                  icon: const Icon(Icons.share, color: Colors.white),
+                  onPressed: () => context.push('/reminders/access'),
+                ),
+                SizedBox(width: 20),
               ],
             ),
           ),
@@ -127,99 +132,120 @@ class _ReminderCard extends StatelessWidget {
         ),
         child: Padding(
           padding: const EdgeInsets.all(18),
-          child: Row(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 🔵 ICONO REDONDO
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.alarm, color: Colors.blue.shade700, size: 26),
-              ),
-
-              const SizedBox(width: 16),
-
-              // TEXTO RESPONSIVO
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      reminder.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: maxWidth < 350 ? 16 : 18,
-                        color: Colors.blue.shade800,
-                        fontWeight: FontWeight.w700,
-                      ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      shape: BoxShape.circle,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      reminder.message,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: maxWidth < 350 ? 13 : 14,
-                      ),
+                    child: Icon(
+                      Icons.alarm,
+                      color: Colors.blue.shade700,
+                      size: 26,
                     ),
-                    const SizedBox(height: 10),
-
-                    Row(
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          Icons.schedule,
-                          size: 16,
-                          color: Colors.blue.shade400,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            "Frecuencia: ${reminder.frequency}",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.blue.shade600,
-                            ),
+                        Text(
+                          reminder.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: maxWidth < 350 ? 16 : 18,
+                            color: Colors.blue.shade800,
+                            fontWeight: FontWeight.w700,
                           ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          reminder.message,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: maxWidth < 350 ? 13 : 14,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.schedule,
+                              size: 16,
+                              color: Colors.blue.shade400,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                "Frecuencia: ${reminder.frequency}",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.blue.shade600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.calendar_today,
+                              size: 16,
+                              color: Colors.blue.shade400,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                "Inicio: ${reminder.startTime}",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.blue.shade600,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today,
-                          size: 16,
-                          color: Colors.blue.shade400,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            "Inicio: ${reminder.startTime}",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.blue.shade600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
 
-              const SizedBox(width: 10),
-              Icon(Icons.chevron_right, size: 30, color: Colors.blue.shade400),
+              const SizedBox(height: 16),
+
+              // 🔵 BOTÓN DE ACCESO
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade600,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    context.push('/reminders/${reminder.id}/access');
+                  },
+                  icon: const Icon(Icons.share),
+                  label: const Text("Dar acceso"),
+                ),
+              ),
             ],
           ),
         ),
