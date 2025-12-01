@@ -32,7 +32,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     "doctor": [
       "Accesos compartidos",
       "Consulta de medicamentos",
-      "Recordatorios",
+      "Recordatorios de pacientes",
       "Pacientes",
     ],
     "family": ["Recordatorios", "Familiares Registrados"],

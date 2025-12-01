@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/medication_provider.dart';
 import '../../data/models/medication.dart';
-import 'create_medication_screen.dart';
 import 'package:intl/intl.dart';
 
 class PatientMedicationsScreen extends ConsumerWidget {
