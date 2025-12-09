@@ -56,166 +56,128 @@ class _CreateMedicationScreenState
                     horizontal: 20,
                     vertical: 16,
                   ),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minWidth: constraints.maxWidth,
-                      minHeight: constraints.maxHeight - 40,
-                    ),
-                    child: IntrinsicHeight(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _title("Selecciona el medicamento"),
+                      _vitalisSection(
+                        child: DropdownButtonFormField<Drug>(
+                          isExpanded: true,
+                          value: selectedDrug,
+                          decoration: const InputDecoration(
+                            labelText: "Medicamento",
+                            prefixIcon: Icon(Icons.medication_outlined),
+                          ),
+                          items: drugs.map((d) {
+                            return DropdownMenuItem(
+                              value: d,
+                              child: Text(d.name),
+                            );
+                          }).toList(),
+                          onChanged: (d) {
+                            setState(() {
+                              selectedDrug = d;
+                              selectedVariant = null;
+                            });
+                          },
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      if (selectedDrug != null) ...[
+                        _title("Variante"),
+                        _vitalisSection(
+                          child: DropdownButtonFormField<DrugVariant>(
+                            isExpanded: true,
+                            value: selectedVariant,
+                            decoration: const InputDecoration(
+                              labelText: "Variante",
+                              prefixIcon: Icon(Icons.medical_services_outlined),
+                            ),
+                            items: selectedDrug!.variants.map((v) {
+                              return DropdownMenuItem(
+                                value: v,
+                                child: Text("${v.variantName} — ${v.dosage}"),
+                              );
+                            }).toList(),
+                            onChanged: (v) =>
+                                setState(() => selectedVariant = v),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+
+                      _title("Instrucciones"),
+                      _vitalisSection(
+                        child: TextFormField(
+                          controller: dosageCtrl,
+                          maxLines: 3,
+                          decoration: const InputDecoration(
+                            labelText: "Instrucciones",
+                            prefixIcon: Icon(Icons.edit_note_outlined),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      _title("Rango de fechas"),
+                      Row(
                         children: [
-                          _title("Selecciona el medicamento"),
-
-                          _vitalisSection(
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: DropdownButtonFormField<Drug>(
-                                isExpanded: true,
-                                initialValue: selectedDrug,
-                                decoration: const InputDecoration(
-                                  labelText: "Medicamento",
-                                  prefixIcon: Icon(Icons.medication_outlined),
+                          Expanded(
+                            child: _vitalisSection(
+                              child: ListTile(
+                                onTap: _pickStart,
+                                leading: const Icon(Icons.calendar_month),
+                                title: Text(
+                                  startDate == null
+                                      ? "Inicio"
+                                      : DateFormat.yMd().format(startDate!),
                                 ),
-                                items: drugs
-                                    .map(
-                                      (d) => DropdownMenuItem(
-                                        value: d,
-                                        child: Text(
-                                          d.name,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (d) {
-                                  setState(() {
-                                    selectedDrug = d;
-                                    selectedVariant = null;
-                                  });
-                                },
                               ),
                             ),
                           ),
-
-                          const SizedBox(height: 20),
-
-                          if (selectedDrug != null) ...[
-                            _title("Variante"),
-
-                            _vitalisSection(
-                              child: SizedBox(
-                                width: double.infinity,
-                                child: DropdownButtonFormField<DrugVariant>(
-                                  isExpanded: true,
-                                  initialValue: selectedVariant,
-                                  decoration: const InputDecoration(
-                                    labelText: "Variante",
-                                    prefixIcon: Icon(
-                                      Icons.medical_services_outlined,
-                                    ),
-                                  ),
-                                  items: selectedDrug!.variants
-                                      .map(
-                                        (v) => DropdownMenuItem(
-                                          value: v,
-                                          child: Text(
-                                            "${v.variantName} — ${v.dosage}",
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
-                                  onChanged: (v) {
-                                    setState(() => selectedVariant = v);
-                                  },
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _vitalisSection(
+                              child: ListTile(
+                                onTap: _pickEnd,
+                                leading: const Icon(Icons.event),
+                                title: Text(
+                                  endDate == null
+                                      ? "Fin"
+                                      : DateFormat.yMd().format(endDate!),
                                 ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 20),
-                          ],
-
-                          _title("Instrucciones"),
-
-                          _vitalisSection(
-                            child: TextFormField(
-                              controller: dosageCtrl,
-                              maxLines: isSmall ? 2 : 3,
-                              decoration: const InputDecoration(
-                                labelText: "Instrucciones",
-                                prefixIcon: Icon(Icons.edit_note_outlined),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 20),
-
-                          _title("Rango de fechas"),
-
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _vitalisSection(
-                                  child: ListTile(
-                                    onTap: _pickStart,
-                                    leading: const Icon(Icons.calendar_month),
-                                    title: Text(
-                                      startDate == null
-                                          ? "Inicio"
-                                          : DateFormat.yMd().format(startDate!),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _vitalisSection(
-                                  child: ListTile(
-                                    onTap: _pickEnd,
-                                    leading: const Icon(Icons.event),
-                                    title: Text(
-                                      endDate == null
-                                          ? "Fin"
-                                          : DateFormat.yMd().format(endDate!),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          const Spacer(),
-
-                          SizedBox(height: isSmall ? 15 : 30),
-
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF1E88E5),
-                              minimumSize: const Size(double.infinity, 54),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              elevation: 4,
-                            ),
-                            onPressed: () => _saveMedication(auth),
-                            child: const Text(
-                              "Guardar",
-                              style: TextStyle(
-                                fontSize: 19,
-                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
                         ],
                       ),
-                    ),
+
+                      const SizedBox(height: 30),
+
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1E88E5),
+                          minimumSize: const Size(double.infinity, 54),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 4,
+                        ),
+                        onPressed: () => _saveMedication(auth),
+                        child: const Text(
+                          "Guardar",
+                          style: TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 40),
+                    ],
                   ),
                 );
               },

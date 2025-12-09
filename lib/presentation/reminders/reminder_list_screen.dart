@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/reminders_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../data/models/reminder.dart';
 import 'package:go_router/go_router.dart';
 
@@ -10,6 +11,7 @@ class RemindersListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reminders = ref.watch(remindersNotifierProvider);
+    final user = ref.watch(authStateProvider).value!;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F7FB),
@@ -81,7 +83,10 @@ class RemindersListScreen extends ConsumerWidget {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Center(child: Text("Error: $e")),
             data: (items) {
-              if (items.isEmpty) {
+              var myReminders = items
+                  .where((r) => r.patient == user.id)
+                  .toList();
+              if (myReminders.isEmpty) {
                 return const Center(
                   child: Text(
                     "No tienes recordatorios",
@@ -92,9 +97,9 @@ class RemindersListScreen extends ConsumerWidget {
 
               return ListView.builder(
                 padding: const EdgeInsets.all(16),
-                itemCount: items.length,
+                itemCount: myReminders.length,
                 itemBuilder: (_, i) => _ReminderCard(
-                  reminder: items[i],
+                  reminder: myReminders[i],
                   maxWidth: constraints.maxWidth,
                 ),
               );

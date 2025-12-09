@@ -24,7 +24,7 @@ class SharedAccess {
       sharedWith: UserProfile.fromJson(json["shared_with"]),
       role: json["role"],
       status: json["status"],
-      createdAt: DateTime.parse(json["created_at"]),
+      createdAt: DateTime.parse(json["created_at"]).toLocal(),
     );
   }
 }

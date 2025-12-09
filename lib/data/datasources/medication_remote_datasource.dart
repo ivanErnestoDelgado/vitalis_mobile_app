@@ -54,6 +54,16 @@ class MedicationRemoteDataSource {
     return Medication.fromJson(res.data as Map<String, dynamic>);
   }
 
+  Future<Medication> createMedicationForDoctor(
+    Map<String, dynamic> payload,
+  ) async {
+    final res = await _dio.post(
+      "api/medications/doctor/medications/",
+      data: payload,
+    );
+    return Medication.fromJson(res.data as Map<String, dynamic>);
+  }
+
   Future<void> deleteMedication(int id) async {
     await _dio.delete("api/medications/patient/medications/$id/");
   }

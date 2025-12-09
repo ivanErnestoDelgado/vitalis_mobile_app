@@ -1,6 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vitalis_mobile_app/data/models/user_profile.dart';
 import 'package:vitalis_mobile_app/presentation/auth/register_screen.dart';
+import 'package:vitalis_mobile_app/presentation/doctorScreens/create_medication_for_patient_screen.dart';
+import 'package:vitalis_mobile_app/presentation/doctorScreens/doctor_patients_screen.dart';
+import 'package:vitalis_mobile_app/presentation/doctorScreens/patient_detail_screen.dart';
+import 'package:vitalis_mobile_app/presentation/familyScreens/shared_reminders_screen.dart';
 import 'package:vitalis_mobile_app/presentation/reminders/create_reminder_access_screen.dart';
 import 'package:vitalis_mobile_app/presentation/reminders/create_reminder_screen.dart';
 import 'package:vitalis_mobile_app/presentation/reminders/reminder_access_list_screen.dart';
@@ -142,6 +147,36 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final id = int.parse(state.pathParameters['id']!);
           return CreateReminderAccessScreen(reminderId: id);
+        },
+      ),
+      GoRoute(
+        path: '/doctor/patients',
+        name: 'patients_list',
+        builder: (context, state) {
+          return const DoctorPatientsScreen();
+        },
+      ),
+      GoRoute(
+        path: '/doctor/patient/:id',
+        name: 'patient_detail',
+        builder: (context, state) {
+          final patient = state.extra as UserProfile;
+          return PatientDetailScreen(patient: patient);
+        },
+      ),
+      GoRoute(
+        path: '/doctor/medications/create/:patientId',
+        name: 'create_medication_for_patient',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['patientId']!);
+          return CreateMedicationForPatientScreen(patientId: id);
+        },
+      ),
+      GoRoute(
+        path: '/family/reminders',
+        name: 'family_reminders',
+        builder: (context, state) {
+          return const SharedRemindersScreen();
         },
       ),
     ],

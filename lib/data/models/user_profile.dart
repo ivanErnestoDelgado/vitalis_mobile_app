@@ -22,7 +22,7 @@ class UserProfile {
       firstName: json["first_name"],
       lastName: json["last_name"],
       phoneNumber: json["phone_number"],
-      createdAt: DateTime.parse(json["created_at"]),
+      createdAt: DateTime.parse(json["created_at"]).toLocal(),
     );
   }
 }

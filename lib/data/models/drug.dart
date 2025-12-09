@@ -5,7 +5,7 @@ class Drug {
   final String name;
   final String description;
   final bool prescriptionRequired;
-  final String createdAt;
+  final DateTime createdAt;
   final List<DrugVariant> variants;
 
   Drug({
@@ -22,7 +22,9 @@ class Drug {
     name: json['name'],
     description: json['description'] ?? '',
     prescriptionRequired: json['prescription_required'] ?? false,
-    createdAt: json['created_at'] ?? '',
+    createdAt: json['created_at'] != null
+        ? DateTime.parse(json['created_at']).toLocal()
+        : DateTime.now(),
     variants:
         (json['variants'] as List<dynamic>?)
             ?.map((v) => DrugVariant.fromJson(v as Map<String, dynamic>))

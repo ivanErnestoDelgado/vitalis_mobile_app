@@ -32,10 +32,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     "doctor": [
       "Accesos compartidos",
       "Consulta de medicamentos",
-      "Recordatorios de pacientes",
+      //"Recordatorios de pacientes",
       "Pacientes",
     ],
-    "family": ["Recordatorios", "Familiares Registrados"],
+    "family": ["Recordatorios de familiares"],
   };
 
   @override
@@ -161,6 +161,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       /// Doctor
       case "Accesos compartidos":
         context.push('/shared?role=doctor');
+        break;
+
+      case "Pacientes":
+        context.push('/doctor/patients');
+        break;
+
+      case "Recordatorios de familiares":
+        context.push('/family/reminders');
         break;
 
       case "Recordatorios":

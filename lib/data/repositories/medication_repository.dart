@@ -19,6 +19,10 @@ class MedicationRepository {
     return remote.createMedication(payload);
   }
 
+  Future<Medication> createMedicationForDoctor(Map<String, dynamic> payload) {
+    return remote.createMedicationForDoctor(payload);
+  }
+
   Future<void> deleteMedication(int id) {
     return remote.deleteMedication(id);
   }

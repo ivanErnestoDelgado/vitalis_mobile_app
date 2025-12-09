@@ -32,7 +32,7 @@ class ReminderAccess {
       canEdit: json["can_edit"],
       canDelete: json["can_delete"],
       receiveNotifications: json["receive_notifications"],
-      addedAt: DateTime.parse(json["added_at"]),
+      addedAt: DateTime.parse(json["added_at"]).toLocal(),
     );
   }
 }

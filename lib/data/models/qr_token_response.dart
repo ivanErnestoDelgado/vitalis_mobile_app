@@ -7,7 +7,7 @@ class QRTokenResponse {
   factory QRTokenResponse.fromJson(Map<String, dynamic> json) {
     return QRTokenResponse(
       token: json["token"],
-      expiresAt: DateTime.parse(json["expires_at"]),
+      expiresAt: DateTime.parse(json["expires_at"]).toLocal(),
     );
   }
 }
